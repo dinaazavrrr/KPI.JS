@@ -8,6 +8,12 @@ const map = (array, process, mainCallback) => {
   const result = new Array(array.length);
   let completed = false;
   let counter = 0;
+
+  /* abort signal */
+  signal.addEventListener('abort', () => {
+    completed = true;
+    mainCallback(signal.reason, null);
+  });
   
   for (const item of array) {
     
@@ -15,11 +21,11 @@ const map = (array, process, mainCallback) => {
 
     process(item, (e, funcResult) => {
       
+      if (completed) return;
       if (e) {
         completed = true;
         return void mainCallback(e, null);
       }
-      if (completed) return;
       
       result[itemIndex] = funcResult;
 

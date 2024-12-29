@@ -9,37 +9,26 @@ const enumerate = function* (array) {
 const map = (array, process, mainCallback) => {
   
   if (array.length === 0) 
-    return mainCallback(null, []);
-  
-  const result = new Array(array.length);
-  let completed = false;
-  let counter = 0;
+    return Promise.resolve([]);
 
-  for (const [index, item] of array.entries()) {
-    
-    process(item, (e, funcResult) => {
-      if (e) {
-        completed = true;
-        return mainCallback(e, null);
-      }
-      if (completed) return;
-      
-      result[index] = funcResult;
-      counter++;
+  const promises = array.map(process);
 
-      if (counter === array.length) 
-        mainCallback(null, result);
-    });
-
-    
-  }
+  return Promise.all(promises);
 };
 
 
-const arrProcessFunc = (item, callback) => {
-  setTimeout(callback, 1000, null, item * 2);
+const arrProcessFunc = (item) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(item * 2);
+    }, 1000);
+  });
 };
 
-map([1, 2, 3, 4], arrProcessFunc, (error, result) => {
-  console.log(`\nResult: ${result}\nError: ${error}\n`);
-});
+map([1, 2, 3, 4], arrProcessFunc)
+  .then((result) => {
+    console.log(`\nResult: ${result}`);
+  })
+  .catch((error) => {
+    console.error(`\nError: ${error}`);
+  });
